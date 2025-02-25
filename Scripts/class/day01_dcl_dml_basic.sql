@@ -48,7 +48,7 @@ show databases;
 -- 'localhost' 대신 '%' 을 사용할 경우 외부에서도 접속 가능
 -- CREATE USER '사용자아이디'@'접속허용IP' IDENTIFIED BY '비밀번호';
 -- GRANT ALL PRIVILEGES ON 권한허용DB명.* TO '사용자아이디' @ '접속허용IP';
-create user sccott@'%' identified by 'tiger';
+create user scott@'%' identified by 'tiger';
 
 grant all privileges on *.* to 'scott'@'%';
 

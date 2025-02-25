@@ -683,8 +683,7 @@ group by deptno
 select b.dname, sum(sal) -- 부서별 급여 합계 조회
 from emp a
 left join dept b on a.deptno = b.deptno
-group by a.deptno
-order by a.deptno;
+group by a.deptno;
 
 select b.dname, sum(sal) 
 from emp a
@@ -700,7 +699,7 @@ having sum(sal) = (  -- group by 조건 넣을 때는 having절 사용
 a);
 
 
--- sasdlkfjasrgasrgaslkrgalkghalalskrhlaskghlakshglaksrhgasrgalgkasjrhgaslghjaksrlsagjhasrhugaslkurgh 모르겠음
+-- sasdlkfjasrgasrgaslkrgalkghalalskrhlaskghlakshglaksrhgasrgalgkasjrhgaslghjaksrlsagjhasrhugaslkurgh 
 select max(saltot)
 from (
 	select deptno, sum(sal) saltot
@@ -708,12 +707,12 @@ from (
 	group by deptno
 )a ; -- from절 안에 셀렉트문 쓰고 별칭을 부여해야 함
 
-select b.dname, sum(a.sal)
+select b.dname, sum(a.sal) -- emp를 a로 지정한 것을 의미함
 from emp a
 left join dept b on a.deptno = b.deptno
 group by a.deptno, dname
 having sum(a.sal) = (                        -- HAVING SUM(A.SAL) = (SELECT MAX(SUM(SAL)) FROM EMP GROUP BY DEPTNO);
-						select max(saltot)
+						select max(a.saltot) -- from절 뒤의 a를 의미함
 						from (
 							select deptno, sum(sal) saltot
 							from emp
@@ -723,7 +722,7 @@ having sum(a.sal) = (                        -- HAVING SUM(A.SAL) = (SELECT MAX(
 
 use hr;
 
--- sasdlkfjasrgasrgaslkrgalkghalalskrhlaskghlakshglaksrhgasrgalgkasjrhgaslghjaksrlsagjhasrhugaslkurgh 모르겠음
+-- sasdlkfjasrgasrgaslkrgalkghalalskrhlaskghlakshglaksrhgasrgalgkasjrhgaslghjaksrlsagjhasrhugaslkurgh 
 
 -- 2. 다중행 서브쿼리 
 -- 다중행 서브쿼리 앞에서는 일반 비교 연산자를 사용 할수 없다
@@ -734,12 +733,24 @@ use hr;
 --                     값이 존재하는가? / 존재하지않는가?
 
 -- (부서별 최고 급여)를 받는 직원의 이름, 부서, 급여 조회
+select deptno, max(sal)
+from emp
+group by deptno;
 
 select a.ename, b.dname, a.sal
 from emp a
-join dept b on a.deptno = b.deptno
-group by b.dname
-having a.sal = max(a.sal);
+left join dept b on a.deptno = b.deptno
+where a.sal in(
+				select max(sal)
+				from emp
+				group by deptno
+);
+
+select b.dname
+from emp a
+left join dept b on a.deptno = b.deptno
+group by b.dname;
+
 
 select deptno, max(sal)
 from emp
@@ -747,7 +758,7 @@ group by deptno;
 
 select a.ename, b.dname, a.sal
 from emp a
-join dept b on a.deptno = b.deptno
+left join dept b on a.deptno = b.deptno
 where a.sal in (
 				select max(sal)
 			    from emp
@@ -776,56 +787,28 @@ select * from emp;
 -- 관리자에 해당하는 직원에 대한 정보와 관리자가 아닌 직원의 정보를 추출하여 조회 
 -- 사번, 이름 , 부서명 , 직급명, '관리자' AS 구분 / '직원' AS 구분
 
-
-select *
+-- 집합 연산자 방식
+select a.empno, a.ename, b.dname, a.job, '관리자' 구분
 from emp a
-left join dept c on a.deptno = c.deptno;
-
-select *
-from emp a
-left join emp b on a.mgr = b.empno;
--- 집합연산자 사용방식
-
-select distinct b.empno, b.ename, c.dname, b.job, '관리자' 구분 -- 관리자
-from emp a
-left join emp b on a.mgr = b.empno
-left join dept c on b.deptno = c.deptno
-where b.ename is not null;
-
-select *
-from emp 
-where empno in (select distinct mgr from emp where mgr is not null);
-
-select * from emp;
-select distinct mgr from emp where mgr is not null;
-
-
-
-
-
-
-commit;
-
-
-
-
-
-
-select a.empno, a.ename, c.dname, a.job, '관리자' 구분 -- 관리자에 해당하는 직원에 대한 정보
-from emp a
-left join emp b on a.mgr = b.empno
-left join dept c on a.deptno = c.deptno
-where b.mgr is null
+left join dept b on a.deptno = b.deptno
+where a.empno in (select mgr from emp where mgr is not null)
 union
-select a.empno, a.ename, c.dname, a.job, '직원' 구분-- 관리자가 아닌 직원에 대한 정보
+select a.empno, a.ename, b.dname, a.job, '직원' 구분
 from emp a
-left join emp b on a.mgr = b.empno
-left join dept c on a.deptno = c.deptno
-where a.mgr is not null;
+left join dept b on a.deptno = b.deptno
+where a.empno not in (select mgr from emp where mgr is not null);
 
-select distinct mgr
-from emp
-where mgr is not null; -- 매니저 사원 번호
+-- case를 이용한 방식
+select a.empno, a.ename, b.dname, a.job,
+		case
+			when a.empno in(select mgr from emp where mgr is not null) then '관리자'
+			else '직원'
+		end 구분
+from emp a
+left join dept b on a.deptno = b.deptno
+order by 구분;
+
+
 
 
 select a.empno, a.ename, b.dname, '관리자' 구분
@@ -850,6 +833,26 @@ left join dept b on a.deptno = b.deptno;
 -- 전체 직원 중(CLERK클럭 점원 직급의 최소 급여)보다 많은 사람 조회
 select * from emp;
 
+
+select *
+from emp
+where sal > any (
+				select min(sal)
+				from emp
+				group by job
+				having job = 'clerk'
+				);
+
+
+
+select ename, sal
+from emp
+where sal > any (
+				select min(a.sal)
+				from emp a
+				group by job);
+
+
 -- > ANY, < ANY : 여러개의 결과값중에서 한개라도 큰 / 작은 경우 - 가장 작은 값보다 크냐? /가장 큰 값보다 작냐?
 select *
 from emp
@@ -863,6 +866,12 @@ select *
 from emp
 where sal > all(select sal from emp where job = 'clerk');
 
+
+
+select *
+from emp
+where sal > all(select sal from emp where job = 'clerk');
+
 -- EXISTS : 서브쿼리의 결과 중에서 만족하는 값이 하나라도 존재하면 참
 -- 참, 거짓 서브쿼리안에 값이 있는지 없는지 
 -- 서브쿼리 결과가 참이면 메인쿼리를 실행, 서브쿼리 결과가 거짓이면 메인쿼리를 실행하지않는다.
@@ -871,8 +880,18 @@ SELECT A.ENAME, A.MGR, A.SAL
 FROM EMP A
 WHERE EXISTS (SELECT 1 FROM EMP B WHERE B.SAL >= 5000);
 
+
+
 -- 다중열 서브쿼리
--- (직원들 중에서 부서에서  (최고 급여를 받는 직원들을 찾아)) 그들의 이름, 부서번호, 직책, 급여 정보를 조회
+-- 전체 직원들 중, 각 부서의 최고 급여를 받는 직원들을 찾아 그들의 이름, 부서번호, 직책, 급여 정보를 조회
+
+select empno, ename, deptno, job, sal
+from emp
+where (deptno, sal) in (
+					     select deptno, max(sal)
+					     from emp
+					     group by deptno
+					    );
 
 select deptno, max(sal) -- 그룹별로 가장큰 급여를 받는 직원의 급여
 from emp
@@ -881,13 +900,23 @@ group by deptno;
 select empno, ename, deptno, job, sal
 from emp
 where (deptno, sal) in (
-						select deptno, max(sal) -- 그룹별로 가장큰 급여를 받는 직원의 급여
-						from emp
-						group by deptno
+						 select deptno, max(sal) -- 그룹별로 가장큰 급여를 받는 직원의 급여
+						 from emp
+						 group by deptno
 						);
 
 select * from emp;
 -- 각 부서에서 가장 오래 근무한 직원 조회
+
+select *
+from emp
+where (deptno, hiredate)
+in(
+	select deptno, min(hiredate)
+	from emp
+	group by deptno
+	);
+
 select deptno, min(hiredate)
 from emp
 group by deptno;
@@ -913,6 +942,15 @@ where (deptno, hiredate) in (
 -- (동일 직급의 급여 평균 (AVG(SAL))보다) 급여를 많이 받고 있는 직원의
 -- 사번, 직급코드, 급여를 조회하세요
 
+select empno, deptno, sal
+from emp
+where sal > all (
+				select floor(avg(sal))
+				from emp
+				group by deptno
+			)
+group by deptno;
+
 select job, floor(avg(sal))
 from emp
 group by job;
@@ -926,8 +964,19 @@ select avg(sal) from emp where job = 'clerk';
 
 select *
 from emp a
-where sal > (select avg(sal) from emp where job = a.job);
+where sal < (select avg(sal) from emp where job = a.job);
 
+select *
+from emp a
+where sal < (select avg(sal) from emp where job = a.job);
+
+select *
+from emp
+where (job, sal) in (
+					 select job, min(sal)
+					 from emp
+					 group by job
+					);
 -- SELECT 절에서 스칼라 서브쿼리 이용 
 -- 모든 사원의 사번, 이름, 관리자 사번, 관리자명 조회
 -- COALESCE 는 NULL 값을 대체하는 함수이다. 여러 개의 인자를 받으며, 첫 번째로 NULL이 아닌 값을 반환한다.
@@ -987,3 +1036,501 @@ from (
 	left join dept b on a.deptno = b.deptno
 	)a
 where dname = 'sales';
+
+/*# TOP-N 분석이란?
+	TOP-N 질의는 columns에서 가장 큰 n개의 값 또는 가장 작은 n개의 값을 요청할 때
+	사용됨
+	예) 가장 적게 팔린 제품 10가지는? 또는 회사에서 가장 소득이 많은 사람 3명은?
+*/
+-- 인라인 뷰를 활용한 TOP-N 분석
+-- ORDER BY 한 결과에 ROWNUM을 붙임
+-- ROWNUM은 행 번호를 의미함
+
+SELECT 
+    ROW_NUMBER() OVER () AS ROWNUM,
+    ENAME, 
+    SAL
+FROM EMP;
+
+SELECT 
+    ROW_NUMBER() OVER () AS ROWNUM,
+    ENAME, 
+    SAL
+FROM EMP
+order by sal desc;
+
+select *
+from (
+	SELECT 
+	    ROW_NUMBER() OVER (order by sal desc) AS ROWNUM, -- over() 안에 order by 삽입 가능 , 정렬조건 
+	    ENAME, 
+	    SAL
+	FROM EMP
+	 ) a
+where rownum <=5;
+
+SELECT 
+    ROW_NUMBER() OVER () AS ROWNUM,
+    ENAME, 
+    SAL
+FROM EMP
+order by sal desc
+limit 5;
+
+-- 급여 평균 2위 안에 드는 부서의 부서코드와 부서명, 평균급여를 조회
+
+select *
+from emp
+
+select a.deptno, b.dname, avgsal
+from (
+		select row_number() over(order by avg(sal) desc) rownum, deptno, avg(sal) avgsal
+		from emp
+		group by deptno
+		having deptno is not null
+		)a
+left join dept b on a.deptno = b.deptno  -- join절 안에 from절 안에 넣어보기
+where rownum <=2;
+
+select a.deptno, b.dname, avg(a.sal) sal_avg, row_number() over(order by avg(a.sal) desc) rownum
+from emp a
+join dept b on a.deptno = b.deptno
+group by a.deptno, b.dname
+limit 2;
+
+select deptno, dname, sal_avg
+from (
+		select a.deptno, b.dname, avg(a.sal) sal_avg, row_number() over(order by avg(a.sal) desc) rownum
+		from emp a
+		join dept b on a.deptno = b.deptno
+		group by a.deptno, b.dname
+		limit 2
+)a ;
+
+select *
+from dept;
+
+-- RANK() OVER(정렬기준) / DENSE_RANK() OVER(정렬기준)
+-- 순위를 매기는 함수
+-- RANK() OVER : 동일한 순위 이후에 다음 순위로 점프
+-- DENSE_RANK() OVER : 동일한 순위 이후에도 다음 순위는 1씩 증가
+
+-- 직원 정보에서 급여를 가장 많이 받는 순으로 이름, 급여, 순위 조회
+
+select ename, sal, dense_rank() over(order by sal desc) 순위
+from emp; -- 1, 2, 2, 3, 4...
+
+select ename, sal, rank() over(order by sal desc) 순위
+from emp; -- 1, 2, 2, 4...
+
+SELECT 
+    이름,
+    급여,
+    순위,
+    순위2
+FROM (
+    SELECT
+        ENAME AS "이름",
+        SAL AS "급여",
+        RANK() OVER (ORDER BY SAL DESC) AS "순위",
+        DENSE_RANK() OVER (ORDER BY SAL DESC) AS "순위2"
+    FROM EMP
+) A
+WHERE 순위 <= 5; -- from절에 서브쿼리 넣어서 사용한 방법
+
+-- WITH 구문 사용
+-- 서브쿼리에 이름을 붙여 사용하며, 중복 작성을 줄일 수 있음
+
+with topn_sal as (
+	select
+		empno,
+		ename,
+		sal
+	from emp
+	order by sal desc
+)
+select
+	row_number () over() as "순위",
+	ename,
+	sal
+from topn_sal;
+
+-- 여러개의 with절
+
+with tot_sal as (
+	select sum(sal) sal1
+	from emp
+),
+avg_sal as (
+	select avg(sal) sal2
+	from emp
+)
+select
+	'합계' col1, sal1 col2
+from tot_sal
+union
+select
+	'평균' col1, sal2 col2
+from avg_sal
+union all
+select '직원', sum(sal) col2
+from emp
+where empno in ('7369', '7499');
+
+-- 부서별 급여 합계가 전체 급여 총 합의 20%보다 많은 부서 조회
+-- 첫 번째 방법: HAVING 절 사용
+select sum(sum_sal)
+from (
+	select a.deptno, b.dname 부서명, sum(sal) sum_sal
+	from emp a
+	join dept b on a.deptno = b.deptno
+	group by deptno, dname
+) a;
+
+select a.deptno, b.dname 부서명, sum(sal) sum_sal
+from emp a
+join dept b on a.deptno = b.deptno
+group by deptno, dname
+having sum(a.sal) > (select sum(sal) * 0.2 from emp); -- having절 안에 서브쿼리
+
+select sum(sal) * 0.5
+from emp;
+
+-- 두 번째 방법: 인라인뷰 사용 :from절에 넣는것
+select deptno, dname, tot_sal
+from (
+		select 
+			a.deptno deptno,
+			b.dname dname,
+			sum(a.sal) tot_sal
+		from emp a
+		join dept b on a.deptno = b.deptno
+		group by deptno, dname
+) a
+where tot_sal > (select sum(sal) * 0.2 from emp);
+
+-- 세 번째 방법: WITH 구문 사용
+with tot_sal as(
+	select 
+			a.deptno deptno,
+			b.dname dname,
+			sum(a.sal) total_sal
+		from emp a
+		join dept b on a.deptno = b.deptno
+		group by deptno, dname 
+)
+select *
+from tot_sal
+where total_sal > (select sum(sal) * 0.2 from emp);
+
+--  클러스터형 인덱스 (Clustered Index)
+-- 데이터는 클러스터형 인덱스에 따라 정렬된 상태로 저장
+-- PRIMARY KEY가 클러스터형 인덱스로 자동 생성
+-- 한 테이블에 하나만 존재
+
+
+-- 보조인덱스
+-- 클러스터형 인덱스와 독립적으로 생성 가능하며, 한 테이블에 여러 개의 생성가능
+-- 
+-- 보조 인덱스는 데이터를 직접 저장하지 않고 클러스터형 인덱스의 키를 가리키는 포인터를 저장 하여
+-- 검색 시 클러스터형 인덱스를 참조
+-- 데이터 정렬에 영향을 미치지 않는다.
+
+-- 클러스터형 인덱스는 데이터와 인덱스가 결합되어 저장되며, 
+-- PRIMARY KEY 또는 UNIQUE NOT NULL 제약 조건이 있는 컬럼으로 자동 생성
+-- 보조 인덱스는 클러스터형 인덱스를 참조하는 추가적인 인덱스로, 한 테이블에 여러 개 생성
+-- 검색 속도와 효율성에서 클러스터형 인덱스가 더 빠르지만, 보조 인덱스는 특정 컬럼에 대한 추가적인 검색 최적화를 제공
+
+-- 클러스터형 인덱스:
+-- 데이터의 기본 검색 기준이 되는 경우.
+-- 예: id 같은 기본 키, 고유한 값(UNIQUE).
+-- 보조 인덱스:
+-- 검색 최적화가 필요한 다른 컬럼에 추가.
+-- 예: email 같은 자주 조회되는 값.
+
+CREATE TABLE  tbl1
+	(	a INT PRIMARY KEY, 
+		b INT,
+		c INT
+	);
+
+show index from tbl1;
+
+CREATE TABLE  tbl2
+	(	a INT PRIMARY KEY,
+		b INT UNIQUE,
+		c INT UNIQUE,
+		d INT
+	);
+
+show index from tbl2;
+
+CREATE TABLE  tbl5
+	(	a INT UNIQUE NOT NULL,  
+		b INT UNIQUE ,
+		c INT UNIQUE,
+		d INT PRIMARY KEY 
+	);
+
+show index from tbl5;
+DROP TABLE IF EXISTS usertbl;
+
+CREATE TABLE usertbl 
+( userID  char(8) NOT NULL PRIMARY KEY,  
+  name    varchar(10) NOT NULL,
+  birthYear   int NOT NULL,
+  addr	  nchar(2) NOT NULL 
+ );
+
+INSERT INTO usertbl VALUES('JNK', '제니', 1996, '서울'); 
+INSERT INTO usertbl VALUES('LRS', '리사', 1997, '태국');  
+INSERT INTO usertbl VALUES('KJS', '카리나', 2000, '서울'); 
+INSERT INTO usertbl VALUES('WNS', '윈터', 2000, '부산');  
+INSERT INTO usertbl VALUES('MHJ', '민지', 2004, '서울');
+commit;
+show index from usertbl;
+
+select * from usertbl;
+
+ALTER TABLE usertbl DROP PRIMARY KEY ;
+
+ALTER TABLE usertbl 
+	ADD CONSTRAINT pk_name PRIMARY KEY(name);
+
+show index from usertbl;
+
+CREATE INDEX idx_usertbl_addr 
+   ON usertbl (addr); -- 보조 인덱스 지정. 속도 향상
+
+select * from usertbl;
+
+-- CREATE UNIQUE INDEX idx_usertbl_birtyYear 
+-- 	ON usertbl (birthYear);
+-- 기존 데이터에 중복값이 있어서 오류.
+
+CREATE INDEX idx_usertbl_addr_birthYear 
+	ON usertbl (addr,birthYear);
+
+show index from usertbl;
+
+drop index idx_usertbl_addr_birthYear on usertbl;
+
+show index from usertbl;
+
+
+-- type = ALL → FULL SCAN 발생! (테이블 전체를 검색함)
+-- possible_keys = NULL → 사용할 수 있는 인덱스 없음
+
+-- type = ref → 인덱스를 활용한 INDEX SCAN 수행
+-- key = idx_usertbl_name_birthYear → 인덱스가 적용됨
+-- Extra = Using index → 실제 테이블을 검색하지 않고 인덱스에서 직접 값을 가져옴 (효율적)
+
+
+-- MySQL은 보조 인덱스보다 PRIMARY KEY를 우선적으로 사용
+-- type 정리
+-- const - PRIMARY KEY 또는 UNIQUE 인덱스를 사용한 단일 행 검색 (가장 빠름)
+-- eq_ref - JOIN에서 PRIMARY KEY 또는 UNIQUE 인덱스를 사용한 1:1 검색
+-- ref - 보조 인덱스(INDEX)를 사용한 검색 (일부 값 일치)
+-- range - BETWEEN, <, >, IN 등의 범위 검색
+-- index - 인덱스를 전체 스캔 (ORDER BY, GROUP BY에서 발생)
+-- ALL - 테이블 전체를 검색 (인덱스 없음, 가장 느림)
+
+EXPLAIN SELECT * FROM usertbl WHERE userid = 'JNK'; 
+explain SELECT * FROM usertbl WHERE name = '제니';
+explain SELECT * FROM usertbl WHERE addr = '서울';
+
+SELECT * FROM usertbl WHERE userid = 'JNK'; 
+SELECT * FROM usertbl WHERE name = '제니';
+
+-- VIEW (뷰)
+-- SELECT 쿼리문을 저장한 객체이다
+-- 실질적인 데이터를 저장하고 있지 않음
+-- 테이블을 사용하는 것과 동일하게 사용할 수 있다.
+-- 매번 자주 사용하는 쿼리문을 정의해 두고 싶을 때 뷰를 생성
+-- VIEW를 한번 만들어두고 마치 테이블처럼 사용한다고 생각!
+-- CREATE [OR REPLACE] VIEW 뷰이름 AS 서브쿼리
+
+CREATE OR REPLACE VIEW V_EMP AS
+SELECT 
+    EMPNO AS 사번,      
+    ENAME AS 이름,     
+    DEPTNO AS 부서     
+FROM EMP;
+
+select *
+from v_emp;
+
+drop view v_emp;
+
+SHOW FULL TABLES WHERE Table_Type = 'VIEW';
+
+create or replace view v_dept as
+select
+	*
+from dept;
+
+select * from dept;
+
+-- 생성된 뷰를 이용해서 DML(INSERT, UPDATE, DELETE) 사용 가능
+
+-- 뷰에 INSERT
+INSERT INTO V_DEPT
+    (DEPTNO, DNAME, LOC)
+VALUES
+    (50,'MULTI', 'MULTI');
+SELECT * FROM V_DEPT;
+SELECT * FROM DEPT;
+
+-- 뷰에 UPDATE
+UPDATE V_DEPT
+SET DNAME = 'YouTuber'
+WHERE DEPTNO = '50';
+
+-- 뷰에 DELETE
+DELETE FROM V_DEPT WHERE DEPTNO = '50';
+
+-- DML 명령어로 조작이 불가능한 경우
+-- 1. 뷰 정의에 포함되지 않은 컬럼을 조작하는 경우
+-- 2. 뷰에 포함되지 않은 컬럼 중에,
+--    베이스가 되는 테이블 컬럼이 NOT NULL 제약 조건이 지정된 경우
+-- 3. 산술 표현식으로 정의된 경우
+-- 4. JOIN을 이용해 여러 테이블을 연결한 경우 (지원 가능하지만 조작 불가)
+-- 5. DISTINCT 포함한 경우
+-- 6. 그룹 함수나 GROUP BY 절을 포함한 경우
+select * from v_dept;
+
+CREATE OR REPLACE VIEW V_GROUPDEPT
+AS
+SELECT 
+    DEPTNO,
+    SUM(SAL) AS 합계, 
+    AVG(SAL) AS 평균 
+FROM EMP
+GROUP BY DEPTNO;
+
+select *
+from v_groupdept;
+
+ -- WITH CHECK OPTION을 사용하면, 특정 조건을 만족하는 행만 추가/수정 가능하도록 제한
+CREATE or replace VIEW view_seoul_users AS 
+SELECT * FROM usertbl WHERE addr = '서울'
+WITH CHECK OPTION;
+
+select * from usertbl;
+select * from view_seoul_users;
+
+-- INSERT INTO view_seoul_users VALUES ('JSM', '지수', 1995, '부산');: check option failed
+
+-- 트리거(TRIGGER)
+-- > 데이터베이스가 미리 정해놓은 조건을 만족하거나 어떠한 동작이 수행되면
+-- 자동적으로 수행되는 객체를 의미
+-- - 트리거의 사전적 의미 : 연쇄 반응
+-- 트리거는 테이블이나 뷰가 INSERT, UPDATE, DELETE등의 DML문에 의해 데이터가 입력,수정,삭제
+-- 될 경우 자동으로 실행 됨 
+-- 제품 입출고에 따른 재고 변화 자동 업데이트
+-- DELIMITER $$를 사용하여 MySQL이 블록 종료를 $$로 인식하게함
+-- 기본적으로 MySQL은 ;를 명령문 종료로 인식 ,;(종료) 를 내부에 많이 사용하기떄문,
+-- 제품 테이블
+
+CREATE TABLE PRODUCT (
+    PCODE INT PRIMARY KEY AUTO_INCREMENT,
+    PNAME VARCHAR(30),
+    BRAND VARCHAR(30),
+    PRICE DECIMAL(10, 2),
+    STOCK INT DEFAULT 0
+);
+
+-- 제품 입출고 테이블 생성
+CREATE TABLE PRO_DETAIL (
+    DCODE INT PRIMARY KEY AUTO_INCREMENT,
+    PCODE INT,
+    PDATE DATE,
+    AMOUNT INT,
+    STATUS ENUM('입고', '출고'),
+    FOREIGN KEY (PCODE) REFERENCES PRODUCT(PCODE)
+);
+
+-- 제품 및 입출고 데이터 조회
+SELECT * FROM PRODUCT;
+SELECT * FROM PRO_DETAIL;
+
+-- 제품 테이블에 데이터 삽입
+INSERT INTO PRODUCT (PNAME, BRAND, PRICE) VALUES ('울트라', 'SS', 900000);
+INSERT INTO PRODUCT (PNAME, BRAND, PRICE) VALUES ('아이폰', 'AP', 900000);
+INSERT INTO PRODUCT (PNAME, BRAND, PRICE) VALUES ('샤오미', 'SOM', 900000);
+
+commit;
+
+delimiter $$  
+
+create trigger trg_pro_detail_insert
+after insert on pro_detail
+for each row
+begin
+    if new.status = '입고' then
+        update product
+        set stock = stock + new.amount
+        where pcode = new.pcode;
+    elseif new.status = '출고' then
+        update product
+        set stock = stock - new.amount
+        where pcode = new.pcode;
+    end if;
+end $$-- 트리거 종료
+
+delimiter ;
+
+delimiter //
+create trigger trg_deletedmembertbl  
+	after delete 
+	on membertbl 
+	for each row 
+begin 
+	-- old 테이블의 내용을 백업테이블에 삽입
+	insert into deletedmembertbl 
+		values (old.memberid, old.membername, old.memberaddress, curdate() ); 
+end //
+delimiter ;
+
+
+
+commit;
+
+insert into pro_detail (pcode, pdate, amount, status) values (1, curdate(), 5, '입고');
+insert into pro_detail (pcode, pdate, amount, status) values (2, curdate(), 10, '입고');
+insert into pro_detail (pcode, pdate, amount, status) values (3, curdate(), 20, '입고');
+
+insert into pro_detail (pcode, pdate, amount, status) values (1, curdate(), 1, '출고');
+insert into pro_detail (pcode, pdate, amount, status) values (2, curdate(), 5, '출고');
+insert into pro_detail (pcode, pdate, amount, status) values (3, curdate(), 13, '출고');
+
+select * from product;
+select * from pro_detail;
+
+set autocommit = 0;
+
+create table testtbl2 
+  (id  int auto_increment primary key, 
+   username varchar(100),                   
+   age int );
+insert into testtbl2 values (null, '이유', 25);
+insert into testtbl2 values (null, '공유', 22);
+insert into testtbl2 values (null, '주혁', 21);
+
+alter table testtbl2
+modify column username varchar(200);
+
+commit;
+
+select * from testtbl2;
+
+show index from testtbl2;
+
+start transaction; -- 트랜젝션 시작
+select * from testtbl2 where id = 1 for update;
+
+update testtbl2 
+set username = '제니2'
+where id = 1;
+
+commit;  -- 여기서 커밋해야 다른 스크립트에서 적용
