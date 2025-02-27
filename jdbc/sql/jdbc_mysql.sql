@@ -6,6 +6,7 @@
 USE scott;
 
 DROP TABLE IF EXISTS CATEGORY, board , MEMBER ;
+
 CREATE TABLE member(
 	no BIGINT AUTO_INCREMENT PRIMARY KEY, 
 	id varchar(10),

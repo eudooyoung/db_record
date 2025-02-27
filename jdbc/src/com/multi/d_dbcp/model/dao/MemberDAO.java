@@ -1,14 +1,14 @@
-package com.multi.c_jdbc.model.dao;
+package com.multi.d_dbcp.model.dao;
 
-import com.multi.c_jdbc.model.dto.Member;
+import com.multi.d_dbcp.common.DBConnectionMgr;
+import com.multi.d_dbcp.common.exception.MemberException;
+import com.multi.d_dbcp.model.dto.Member;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
-
-import static com.multi.c_jdbc.common.JDBCConnect.close;
 /* 1.Connection 객체연결하기
  * 2.Statement 객체 생성하기
  * 3.ResultSet 객체 생성하기
@@ -27,7 +27,7 @@ public class MemberDAO {
         try {
             prop = new Properties();
             prop.load(new FileReader("resources/query.properties"));
-            //prop.loadFromXML(new FileInputStream("mapper/query_o.xml"));
+            //prop.loadFromXML(new FileInputStream("mapper/query_m.xml"));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -37,7 +37,6 @@ public class MemberDAO {
     public ArrayList<Member> selectAll(Connection conn) {
 
         ArrayList<Member> list = new ArrayList<>();
-
         Statement stmt = null;
         ResultSet rs = null;
 
@@ -68,10 +67,10 @@ public class MemberDAO {
                 list.add(m);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new MemberException(e);
         } finally {
-            close(rs);
-            close(stmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, stmt, rs);
         }
 
         return list;
@@ -110,8 +109,8 @@ public class MemberDAO {
             throw new RuntimeException(e);
         }
         finally {
-            close(rs);
-            close(pstmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, pstmt, rs);
         }
 
         return m;
@@ -152,8 +151,8 @@ public class MemberDAO {
             throw new RuntimeException(e);
         }
         finally {
-            close(rs);
-            close(pstmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, pstmt, rs);
         }
 
         return m;
@@ -162,7 +161,6 @@ public class MemberDAO {
     public int insertMember(Connection conn, Member member) {
         int result = 0;
         PreparedStatement pstmt = null;
-
         String sql = prop.getProperty("insertMember");
 
         try {
@@ -185,7 +183,8 @@ public class MemberDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally{
-            close(pstmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, pstmt);
         }
 
         return result;
@@ -213,7 +212,8 @@ public class MemberDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally{
-            close(pstmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, pstmt);
         }
 
         return result;
@@ -234,7 +234,8 @@ public class MemberDAO {
             throw new RuntimeException(e);
         }
         finally {
-            close(pstmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, pstmt);
         }
 
         return result;
@@ -276,8 +277,8 @@ public class MemberDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            close(rs);
-            close(stmt);
+            DBConnectionMgr dbcp = new DBConnectionMgr();
+            dbcp.freeConnection(conn, stmt, rs);
         }
 
         return list;

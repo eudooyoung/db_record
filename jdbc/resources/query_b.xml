@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment/>
+
+    <entry key="selectAll">
+        select * from board
+    </entry>
+    <entry key = "selectOne">
+        select *
+        from board
+        where no = ?
+    </entry>
+    <entry key="selectByTitle">
+        select *
+        from board
+        where title like ?
+    </entry>
+    <entry key="insertPost">
+        insert into board
+        (
+        category_code, title, content, writer, count, created_date, modified_date
+        )
+        values
+        (
+        ?, ?, ?, ?
+        , ?, current_timestamp, current_timestamp
+        )
+    </entry>
+    <entry key="updatePost">
+        update
+        board
+        set category_code = ?
+        , title = ?
+        , content = ?
+        , modified_date = current_timestamp
+        where no = ?
+    </entry>
+    <entry key="deletePost">
+        delete from board where no = ?
+    </entry>
+    <entry key="selectAllDeleteMember">
+        SELECT * FROM STUDENT_DEL
+    </entry>
+</properties>

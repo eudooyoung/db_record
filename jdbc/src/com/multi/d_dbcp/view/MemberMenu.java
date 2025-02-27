@@ -1,7 +1,7 @@
-package com.multi.c_jdbc.view;
+package com.multi.d_dbcp.view;
 
-import com.multi.c_jdbc.controller.MemberController;
-import com.multi.c_jdbc.model.dto.Member;
+import com.multi.d_dbcp.controller.MemberController;
+import com.multi.d_dbcp.model.dto.Member;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -54,7 +54,8 @@ public class MemberMenu {
                     case 9:
                         System.out.println("정말로 끝내시겠습니까??(y/n)");
                         if ('y' == sc.next().toLowerCase().charAt(0)) {
-                            //memberController.exitProgram();
+                            memberController.exitProgram();
+                            sc.close();
                             return;  // 프로그램 종료
                         }
                         break;
@@ -154,9 +155,13 @@ public class MemberMenu {
         System.out.println("서비스 요청결과: " + message);
     }
 
-    public void displayDelete() {
-        System.out.println("회원 정보가 삭제 되었습니다.");
+    public void displayDelete(String memberId) {
+        System.out.println(memberId + "의 정보가 삭제 되었습니다.");
 
+    }
+
+    public void displayError(String message) {
+        System.out.println("서비스 요청 처리 실패: " + message);
     }
 }
 

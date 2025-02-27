@@ -69,7 +69,7 @@ public class JDBCConnect {
     public static void close(Connection con) {
         try {
             if(con != null && !con.isClosed()) {
-                System.out.println("닫기 ------------con");
+                System.out.println("닫기 ------------");
                 con.close();
             }
         } catch (SQLException e) {

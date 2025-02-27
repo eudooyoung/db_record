@@ -57,4 +57,33 @@ public class MemberController {
             new MemberMenu().displaySuccess("회원가입 성공");
         }
     }
+
+    public void updateMember(Member member) {
+        int result = memberService.updateMember(member);
+        if(result > 0) {
+            new MemberMenu().displaySuccess("회원수정 성공");
+        }
+    }
+
+    public void deleteMember(String memberId) {
+        MemberMenu memberMenu = new MemberMenu();
+        int result = memberService.deleteMember(memberId);
+
+        if(result > 0) {
+            memberMenu.displayDelete();
+        } else {
+            memberMenu.displayNoData();
+        }
+    }
+
+    public void selectAllDeleteMember() {
+        MemberMenu memberMenu = new MemberMenu();
+        ArrayList<Member> list = memberService.selectAllDeleteMember();
+
+        if(!list.isEmpty()) {
+            memberMenu.displayMemberList(list);
+        } else {
+            memberMenu.displayNoData();
+        }
+    }
 }

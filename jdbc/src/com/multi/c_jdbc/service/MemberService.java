@@ -47,4 +47,32 @@ public class MemberService {
 
         return result;
     }
+
+    public int updateMember(Member member) {
+        Connection conn = getConnection();
+        int result = memberDAO.updateMember(conn, member);
+        if(result > 0) commit(conn);
+        else rollback(conn);
+        close(conn);
+
+        return result;
+    }
+
+    public int deleteMember(String memberId) {
+        Connection conn = getConnection();
+        int result = memberDAO.deleteMember(conn, memberId);
+        if(result > 0) commit(conn);
+        else rollback(conn);
+        close(conn);
+
+        return result;
+    }
+
+    public ArrayList<Member> selectAllDeleteMember() {
+        Connection conn = getConnection();
+        ArrayList<Member> list = memberDAO.selectAllDeleteMember(conn);
+        close(conn);
+
+        return list;
+    }
 }
