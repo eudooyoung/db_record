@@ -9,10 +9,10 @@ public class Board {
     private String title;
     private String content;
     private long writer;
-    private int count;
     private Timestamp createdDate;
     private Timestamp modifiedDate;
     private String status;
+    private int count;
 
     public Board() {
     }
@@ -27,8 +27,6 @@ public class Board {
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
         this.status = status;
-
-        count++;
     }
 
     public long getNo() {

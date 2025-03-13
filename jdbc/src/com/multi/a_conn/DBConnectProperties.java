@@ -17,7 +17,6 @@ public class DBConnectProperties {
             prop.load(new FileReader("config/connection.properties"));
 
             System.out.println(prop);
-
             String driver = prop.getProperty("driver");
             String url = prop.getProperty("url");
             String user = prop.getProperty("user");
@@ -25,7 +24,7 @@ public class DBConnectProperties {
 
             Class.forName(driver);
 
-            con = DriverManager.getConnection(url, user, password);
+            con = DriverManager.getConnection(url, prop);
 
             System.out.println(con);
 

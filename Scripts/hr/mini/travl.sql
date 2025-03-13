@@ -1,4 +1,3 @@
-use jdbc;
 
 create database travel_db;
 use travel_db;
@@ -14,4 +13,5 @@ create table travel (
 	phone varchar(256)
 );
 
+select * from travel;
 commit;

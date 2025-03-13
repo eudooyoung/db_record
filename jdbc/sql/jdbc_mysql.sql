@@ -143,3 +143,5 @@ DELIMITER ;
 
 SELECT *
 FROM STUDENT_del;
+
+select * from board;

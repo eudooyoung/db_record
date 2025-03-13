@@ -17,8 +17,6 @@ CREATE TABLE member(
 	name varchar(10),
 	tel varchar(10),
 	create_date  TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
-
-
 );
 
 select *
@@ -61,21 +59,22 @@ SELECT * FROM CATEGORY;
 
 
 
-CREATE TABLE BOARD (
-  	no BIGINT AUTO_INCREMENT PRIMARY KEY, 
-  CATEGORY_CODE INT,
-  TITLE VARCHAR(100),
-  CONTENT TEXT NOT NULL,
-  WRITER BIGINT NOT NULL,
-  COUNT INT DEFAULT 0 NOT NULL,
-  CREATED_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  MODIFIED_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  STATUS CHAR(1) DEFAULT 'Y',
-  FOREIGN KEY (CATEGORY_CODE) REFERENCES CATEGORY(C_CODE),
-  FOREIGN KEY (WRITER) REFERENCES MEMBER(NO)
+create table board (
+  	no bigint auto_increment primary key, 
+  category_code int,
+  title varchar(100),
+  content text not null,
+  writer bigint not null,
+  count int default 0 not null,
+  created_date timestamp default current_timestamp,
+  modified_date timestamp default current_timestamp on update current_timestamp,
+  status char(1) default 'y',
+  foreign key (category_code) references category(c_code),
+  foreign key (writer) references member(no)
 );
 
-
+select * from board;
+commit;
 
 INSERT INTO BOARD 
 ( CATEGORY_CODE, TITLE, CONTENT, WRITER) 
